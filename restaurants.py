@@ -8,29 +8,38 @@ def get_restaurants(lat,lon):
             location=str(lat)+","+str(lon)
             maps_api_key='AIzaSyAgjjNmY1XnfAbZjSpYgh3VlvdwgbWXSzw'
             uri=("/maps/api/place/nearbysearch/json?location="+location+
-                    "&radius=500&type=restaurant&key="+maps_api_key)
-            connection.request("GET",uri)
-            response=connection.getresponse()
-            if(response.status==200):
-                results=response.read()
-                return json.loads(results)
-            else:
-                return 'Reponse not successful. Try again.'
-            restaurants={}
-            return restaurants
+                    "&radius=1000&type=restaurant&key="+maps_api_key)
+            try:
+                connection.request("GET",uri)
+                response=connection.getresponse()
+                if(response.status==200):
+                    results=response.read()
+                    return json.loads(results)
+                else:
+                    return 'Reponse not successful. Try again.'
+                restaurants={}
+                return restaurants
+            except Exception:
+                return 'Communication failure. Please try again later.'
         else:
-            return 'Undefined'
+            return 'Latitude and/or longitude out of range'
     else:
-        return 'Undefined'
+        return 'Latitude and longitude must be numbers'
 
 def main():
     lat=raw_input('\nEnter latitude: ')
     lon=raw_input('Enter longitude: ')
     print '\nGetting restaurants...\n'
-    restaurants=get_restaurants(lat,lon)
+    try:
+        restaurants=get_restaurants(float(lat),float(lon))
+    except ValueError:
+        restaurants=get_restaurants(lat,lon)
     if isinstance(restaurants,dict):
-        for restaurant in restaurants['results']:
-            print restaurant['name']
+        if len(restaurants['results'])>0:
+            for restaurant in restaurants['results']:
+                print restaurant['name']
+        else:
+            print "Couldn't find restaurants near provided location"
     else:
         print restaurants
     print '\n'  
